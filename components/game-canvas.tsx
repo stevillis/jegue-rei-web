@@ -7,17 +7,17 @@ import { useGameLoop } from "@/lib/use-game-loop"
 import { useKeyPress } from "@/lib/use-key-press"
 
 // Game constants
-const SCREEN_WIDTH = 800
-const SCREEN_HEIGHT = 600
-const PLAYER_SIZE = 15 // Increased size for better visibility with images
-const CIRCLE_RADIUS = 15 // Increased size for better visibility with images
-const FOOD_RADIUS = 15 // Separate size for food
+// const SCREEN_WIDTH = 800
+// const SCREEN_HEIGHT = 600
+const PLAYER_SIZE = 15
+const OBSTACLE_RADIUS = 15
+const FOOD_RADIUS = 15
 const PLAYER_SPEED = 5
-const CIRCLE_SPEED = 3
+const OBSTACLE_SPEED = 3
 
 // Adjusted timing constants for slower obstacle spawning
-const CIRCLE_SPAWN_DELAY_INITIAL = 5000
-const CIRCLE_SPAWN_DELAY_MIN = 1500
+const OBSTACLE_SPAWN_DELAY_INITIAL = 5000
+const OBSTACLE_SPAWN_DELAY_MIN = 1500
 const SPAWN_RATE_DECREASE = 50
 const MAX_CIRCLES = 100
 
@@ -37,8 +37,8 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
   const [food, setFood] = useState<Food | null>(null)
   const [score, setScore] = useState(0)
   const [startTime] = useState(Date.now())
-  const [nextSpawnTime, setNextSpawnTime] = useState(Date.now() + CIRCLE_SPAWN_DELAY_INITIAL)
-  const [currentSpawnDelay, setCurrentSpawnDelay] = useState(CIRCLE_SPAWN_DELAY_INITIAL)
+  const [nextSpawnTime, setNextSpawnTime] = useState(Date.now() + OBSTACLE_SPAWN_DELAY_INITIAL)
+  const [currentSpawnDelay, setCurrentSpawnDelay] = useState(OBSTACLE_SPAWN_DELAY_INITIAL)
   const [gameTime, setGameTime] = useState(0)
   const [images, setImages] = useState<{
     player: HTMLImageElement | null
@@ -50,6 +50,10 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     food: null,
   })
   const [isLoading, setIsLoading] = useState(true)
+
+  // Add these new state variables and window size hook
+  const [screenWidth, setScreenWidth] = useState(800)  // default fallback values
+  const [screenHeight, setScreenHeight] = useState(600)
 
   // Load images
   useEffect(() => {
@@ -106,11 +110,11 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     if (!ctx) return
 
     // Set canvas dimensions
-    canvas.width = SCREEN_WIDTH
-    canvas.height = SCREEN_HEIGHT
+    canvas.width = screenWidth
+    canvas.height = screenHeight
 
     // Create player
-    const newPlayer = new Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, PLAYER_SIZE, "blue", images.player)
+    const newPlayer = new Player(screenWidth / 2, screenHeight / 2, PLAYER_SIZE, "blue", images.player)
     setPlayer(newPlayer)
 
     // Create initial food
@@ -123,13 +127,13 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
     // Handle window resize
     const handleResize = () => {
-      canvas.width = SCREEN_WIDTH
-      canvas.height = SCREEN_HEIGHT
+      canvas.width = screenWidth
+      canvas.height = screenHeight
     }
 
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
-  }, [isLoading, images])
+  }, [isLoading, images, screenWidth, screenHeight])
 
   // Keyboard controls
   const arrowUp = useKeyPress("ArrowUp")
@@ -146,19 +150,19 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
     if (isHorizontal) {
       // Spawn on left or right edge
-      x = Math.random() < 0.5 ? CIRCLE_RADIUS : SCREEN_WIDTH - CIRCLE_RADIUS
-      y = Math.random() * (SCREEN_HEIGHT - 2 * CIRCLE_RADIUS) + CIRCLE_RADIUS
-      speedX = x === CIRCLE_RADIUS ? CIRCLE_SPEED : -CIRCLE_SPEED
+      x = Math.random() < 0.5 ? OBSTACLE_RADIUS : screenWidth - OBSTACLE_RADIUS
+      y = Math.random() * (screenHeight - 2 * OBSTACLE_RADIUS) + OBSTACLE_RADIUS
+      speedX = x === OBSTACLE_RADIUS ? OBSTACLE_SPEED : -OBSTACLE_SPEED
       speedY = 0
     } else {
       // Spawn on top or bottom edge
-      x = Math.random() * (SCREEN_WIDTH - 2 * CIRCLE_RADIUS) + CIRCLE_RADIUS
-      y = Math.random() < 0.5 ? CIRCLE_RADIUS : SCREEN_HEIGHT - CIRCLE_RADIUS
+      x = Math.random() * (screenWidth - 2 * OBSTACLE_RADIUS) + OBSTACLE_RADIUS
+      y = Math.random() < 0.5 ? OBSTACLE_RADIUS : screenHeight - OBSTACLE_RADIUS
       speedX = 0
-      speedY = y === CIRCLE_RADIUS ? CIRCLE_SPEED : -CIRCLE_SPEED
+      speedY = y === OBSTACLE_RADIUS ? OBSTACLE_SPEED : -OBSTACLE_SPEED
     }
 
-    const newObstacle = new Obstacle(x, y, CIRCLE_RADIUS, "red", speedX, speedY, images.obstacle)
+    const newObstacle = new Obstacle(x, y, OBSTACLE_RADIUS, "red", speedX, speedY, images.obstacle)
     setObstacles((prev) => [...prev, newObstacle])
   }
 
@@ -167,8 +171,8 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     if (!images.food) return
 
     const padding = 30
-    const x = padding + Math.random() * (SCREEN_WIDTH - 2 * padding)
-    const y = padding + Math.random() * (SCREEN_HEIGHT - 2 * padding)
+    const x = padding + Math.random() * (screenWidth - 2 * padding)
+    const y = padding + Math.random() * (screenHeight - 2 * padding)
 
     const newFood = new Food(x, y, FOOD_RADIUS, "green", images.food)
     setFood(newFood)
@@ -183,7 +187,7 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
     // Clear canvas
     ctx.fillStyle = "black"
-    ctx.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+    ctx.fillRect(0, 0, screenWidth, screenHeight)
 
     // Update game time
     const currentTime = Date.now()
@@ -192,13 +196,13 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
     // Update player position based on key presses
     if (arrowUp) player.y = Math.max(player.y - PLAYER_SPEED, player.radius)
-    if (arrowDown) player.y = Math.min(player.y + PLAYER_SPEED, SCREEN_HEIGHT - player.radius)
+    if (arrowDown) player.y = Math.min(player.y + PLAYER_SPEED, screenHeight - player.radius)
     if (arrowLeft) player.x = Math.max(player.x - PLAYER_SPEED, player.radius)
-    if (arrowRight) player.x = Math.min(player.x + PLAYER_SPEED, SCREEN_WIDTH - player.radius)
+    if (arrowRight) player.x = Math.min(player.x + PLAYER_SPEED, screenWidth - player.radius)
 
     // Update and draw obstacles
     const updatedObstacles = obstacles.map((obstacle) => {
-      obstacle.update(SCREEN_WIDTH, SCREEN_HEIGHT)
+      obstacle.update(screenWidth, screenHeight)
       obstacle.draw(ctx)
       return obstacle
     })
@@ -223,8 +227,8 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     // Spawn new obstacles based on time, but with a slower rate
     // Gradually decrease spawn time
     const newSpawnDelay = Math.max(
-      CIRCLE_SPAWN_DELAY_MIN,
-      CIRCLE_SPAWN_DELAY_INITIAL - (elapsedTime / 20) * SPAWN_RATE_DECREASE, // Slower decrease (divided by 20 instead of 10)
+      OBSTACLE_SPAWN_DELAY_MIN,
+      OBSTACLE_SPAWN_DELAY_INITIAL - (elapsedTime / 20) * SPAWN_RATE_DECREASE, // Slower decrease (divided by 20 instead of 10)
     )
 
     if (currentTime >= nextSpawnTime && obstacles.length < MAX_CIRCLES) {
@@ -243,6 +247,39 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     ctx.fillText(`Pontuação: ${score + elapsedTime} (Presentes: ${score} + Tempo: ${elapsedTime})`, 10, 30)
   })
 
+  // Update the useEffect for dimensions
+  useEffect(() => {
+    const updateDimensions = () => {
+      // Get the container element's dimensions
+      const container = document.querySelector('.game-container')
+      if (container) {
+        // Get container's padding
+        const computedStyle = window.getComputedStyle(container)
+        const paddingTop = parseInt(computedStyle.paddingTop, 10)
+        const paddingBottom = parseInt(computedStyle.paddingBottom, 10)
+        const paddingLeft = parseInt(computedStyle.paddingLeft, 10)
+        const paddingRight = parseInt(computedStyle.paddingRight, 10)
+
+        // Calculate available space (viewport height minus header and any other elements)
+        const headerHeight = 80 // Adjust based on your header's height
+        const availableHeight = window.innerHeight - headerHeight - paddingTop - paddingBottom
+        const availableWidth = window.innerWidth - paddingLeft - paddingRight
+
+        setScreenWidth(availableWidth)
+        setScreenHeight(availableHeight)
+
+        if (canvasRef.current) {
+          canvasRef.current.width = availableWidth
+          canvasRef.current.height = availableHeight
+        }
+      }
+    }
+
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+    return () => window.removeEventListener('resize', updateDimensions)
+  }, [])
+
   if (isLoading) {
     return (
       <div className="w-full h-[600px] flex items-center justify-center bg-black text-white border border-gray-700 rounded">
@@ -252,7 +289,13 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
   }
 
   return (
-    <canvas ref={canvasRef} width={SCREEN_WIDTH} height={SCREEN_HEIGHT} className="border border-gray-700 rounded" />
+    <div className="game-container w-full h-full flex items-center justify-center p-4">
+      <canvas
+        ref={canvasRef}
+        width={screenWidth}
+        height={screenHeight}
+        className="border border-gray-700 rounded"
+      />
+    </div>
   )
 }
-

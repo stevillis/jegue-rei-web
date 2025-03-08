@@ -100,7 +100,7 @@ export default function GameOverScreen({ score, timeAlive, onRestart, onSaveScor
 
       <div className="flex justify-center gap-4">
         <Button onClick={onRestart} className="bg-amber-600 hover:bg-amber-700 text-white">
-          Jogar Novamente
+          Jogar novamente
         </Button>
       </div>
     </div>

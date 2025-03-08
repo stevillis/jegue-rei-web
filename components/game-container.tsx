@@ -101,91 +101,95 @@ export default function GameContainer() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-4">
-      <h1 className="text-4xl font-bold mb-4">Jegue Rei - O Jogo</h1>
+    <div className="flex flex-col items-center min-h-screen bg-black text-white overflow-hidden">
+      <h1 className="text-4xl font-bold my-4">Jegue Rei - O Jogo</h1>
 
       {error && <div className="bg-red-500 text-white p-2 mb-4 rounded max-w-md">{error}</div>}
 
-      {gameState === "menu" && (
-        <div className="text-center max-w-md w-full">
-          <p className="mb-4">Desvie dos pico-picos e tente pegar o presente.</p>
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Digite seu nome"
-            className="mb-4 p-2 border rounded w-full text-black"
-            maxLength={20}
-          />
-          <button
-            onClick={startGame}
-            disabled={!playerName}
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 w-full"
-          >
-            Iniciar Jogo
-          </button>
+      {/* Game states */}
+      <div className="flex-1 w-full flex items-center justify-center">
+        {gameState === "menu" && (
+          <div className="text-center max-w-md w-full">
+            <p className="mb-4">Tente pegar o presente e desviar dos martelos.</p>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Digite seu nome"
+              className="mb-4 p-2 border rounded w-full text-black"
+              maxLength={20}
+            />
+            <button
+              onClick={startGame}
+              disabled={!playerName}
+              className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50 w-full"
+            >
+              Jogar
+            </button>
 
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-2 text-yellow-400">Top Jegues:</h2>
-            {isLoading ? (
-              <p>Carregando recordes...</p>
-            ) : (
-              <ul className="bg-gray-800 rounded p-2">
-                {highScores.length > 0 ? (
-                  highScores.map((score, index) => (
+            <div className="mt-8">
+              <h2 className="text-2xl font-bold mb-2 text-yellow-400">Top Jegues:</h2>
+              {isLoading ? (
+                <p>Carregando recordes...</p>
+              ) : (
+                <ul className="bg-gray-800 rounded p-2">
+                  {highScores.length > 0 ? (
+                    highScores.map((score, index) => (
+                      <li key={index} className="py-1 border-b border-gray-700 last:border-0">
+                        {index + 1}. {score.player_name}: {score.score} pts
+                      </li>
+                    ))
+                  ) : (
+                    <li>Nenhum recorde ainda. Seja o primeiro!</li>
+                  )}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        {gameState === "playing" && <GameCanvas onGameOver={handleGameOver} playerName={playerName} />}
+
+        {gameState === "gameOver" && (
+          <div className="text-center max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4">
+              {playerName} fez {currentScore} pontos.
+              <br />
+              BOA, JEGUE!!!
+            </h2>
+
+            {/* Add save score button */}
+            {playerName && (
+              <button
+                onClick={() => handleSaveScore(playerName, currentScore)}
+                className="px-4 py-2 bg-green-500 text-white rounded w-full mb-4 disabled:opacity-50"
+                disabled={scoreSaved}
+              >
+                {scoreSaved ? 'Pontuação salva!' : 'Salvar pontuação'}
+              </button>
+            )}
+
+            <button onClick={restartGame} className="px-4 py-2 bg-blue-500 text-white rounded w-full mb-4">
+              Jogar novamente
+            </button>
+
+            <div className="mt-4">
+              <h2 className="text-2xl font-bold mb-2 text-yellow-400">Top Jegues:</h2>
+              {isLoading ? (
+                <p>Carregando recordes...</p>
+              ) : (
+                <ul className="bg-gray-800 rounded p-2">
+                  {highScores.map((score, index) => (
                     <li key={index} className="py-1 border-b border-gray-700 last:border-0">
                       {index + 1}. {score.player_name}: {score.score} pts
                     </li>
-                  ))
-                ) : (
-                  <li>Nenhum recorde ainda. Seja o primeiro!</li>
-                )}
-              </ul>
-            )}
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-
-      {gameState === "playing" && <GameCanvas onGameOver={handleGameOver} />}
-
-      {gameState === "gameOver" && (
-        <div className="text-center max-w-md w-full">
-          <h2 className="text-2xl font-bold mb-4">BOA, JEGUE!!!</h2>
-          <p className="mb-4 text-xl">
-            {playerName}'s score: {currentScore}
-          </p>
-
-          {/* Add save score button */}
-          {playerName && (
-            <button
-              onClick={() => handleSaveScore(playerName, currentScore)}
-              className="px-4 py-2 bg-green-500 text-white rounded w-full mb-4 disabled:opacity-50"
-              disabled={scoreSaved}
-            >
-              {scoreSaved ? 'Pontuação Salva!' : 'Salvar Pontuação'}
-            </button>
-          )}
-
-          <button onClick={restartGame} className="px-4 py-2 bg-blue-500 text-white rounded w-full mb-4">
-            Jogar Novamente
-          </button>
-
-          <div className="mt-4">
-            <h2 className="text-2xl font-bold mb-2 text-yellow-400">Top Jegues:</h2>
-            {isLoading ? (
-              <p>Carregando recordes...</p>
-            ) : (
-              <ul className="bg-gray-800 rounded p-2">
-                {highScores.map((score, index) => (
-                  <li key={index} className="py-1 border-b border-gray-700 last:border-0">
-                    {index + 1}. {score.player_name}: {score.score} pts
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
