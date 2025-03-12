@@ -140,6 +140,10 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
   const arrowDown = useKeyPress("ArrowDown")
   const arrowLeft = useKeyPress("ArrowLeft")
   const arrowRight = useKeyPress("ArrowRight")
+  const wKey = useKeyPress("w")
+  const aKey = useKeyPress("a")
+  const sKey = useKeyPress("s")
+  const dKey = useKeyPress("d")
 
   // Spawn a new obstacle
   const spawnObstacle = () => {
@@ -195,10 +199,10 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
     setGameTime(elapsedTime)
 
     // Update player position based on key presses
-    if (arrowUp) player.y = Math.max(player.y - PLAYER_SPEED, player.radius)
-    if (arrowDown) player.y = Math.min(player.y + PLAYER_SPEED, screenHeight - player.radius)
-    if (arrowLeft) player.x = Math.max(player.x - PLAYER_SPEED, player.radius)
-    if (arrowRight) player.x = Math.min(player.x + PLAYER_SPEED, screenWidth - player.radius)
+    if (arrowUp || wKey) player.y = Math.max(player.y - PLAYER_SPEED, player.radius)
+    if (arrowDown || sKey) player.y = Math.min(player.y + PLAYER_SPEED, screenHeight - player.radius)
+    if (arrowLeft || aKey) player.x = Math.max(player.x - PLAYER_SPEED, player.radius)
+    if (arrowRight || dKey) player.x = Math.min(player.x + PLAYER_SPEED, screenWidth - player.radius)
 
     // Update and draw obstacles
     const updatedObstacles = obstacles.map((obstacle) => {
