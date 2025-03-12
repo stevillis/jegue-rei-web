@@ -51,9 +51,9 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
   })
   const [isLoading, setIsLoading] = useState(true)
 
-  // Add these new state variables and window size hook
-  const [screenWidth, setScreenWidth] = useState(800)  // default fallback values
-  const [screenHeight, setScreenHeight] = useState(600)
+  // Set initial screen dimensions to available screen size minus some pixels
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth - 40)
+  const [screenHeight, setScreenHeight] = useState(window.innerHeight - 120)
 
   // Load images
   useEffect(() => {
@@ -127,8 +127,24 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
     // Handle window resize
     const handleResize = () => {
-      canvas.width = screenWidth
-      canvas.height = screenHeight
+      const container = document.querySelector('.game-container')
+      if (container) {
+        const computedStyle = window.getComputedStyle(container)
+        const paddingTop = parseInt(computedStyle.paddingTop, 10)
+        const paddingBottom = parseInt(computedStyle.paddingBottom, 10)
+        const paddingLeft = parseInt(computedStyle.paddingLeft, 10)
+        const paddingRight = parseInt(computedStyle.paddingRight, 10)
+
+        const headerHeight = 80 // Adjust based on your header's height
+        const availableHeight = window.innerHeight - headerHeight - paddingTop - paddingBottom - 20
+        const availableWidth = window.innerWidth - paddingLeft - paddingRight - 20
+
+        setScreenWidth(availableWidth)
+        setScreenHeight(availableHeight)
+
+        canvas.width = availableWidth
+        canvas.height = availableHeight
+      }
     }
 
     window.addEventListener("resize", handleResize)
@@ -266,8 +282,8 @@ export default function GameCanvas({ onGameOver }: GameCanvasProps) {
 
         // Calculate available space (viewport height minus header and any other elements)
         const headerHeight = 80 // Adjust based on your header's height
-        const availableHeight = window.innerHeight - headerHeight - paddingTop - paddingBottom
-        const availableWidth = window.innerWidth - paddingLeft - paddingRight
+        const availableHeight = window.innerHeight - headerHeight - paddingTop - paddingBottom - 20
+        const availableWidth = window.innerWidth - paddingLeft - paddingRight - 20
 
         setScreenWidth(availableWidth)
         setScreenHeight(availableHeight)
