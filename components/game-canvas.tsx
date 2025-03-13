@@ -23,8 +23,8 @@ const MAX_CIRCLES = 100
 
 // Image paths - replace these with your actual image paths
 const PLAYER_IMAGE_PATH = "/player.png" // Example: "/images/player.png"
-const OBSTACLE_IMAGE_PATH = "/obstacle.png" // Example: "/images/obstacle.png"
-const FOOD_IMAGE_PATH = "food.png" // Example: "/images/food.png"
+const OBSTACLE_IMAGE_PATH = "/nyang.png" // Example: "/images/nyang.png"
+const FOOD_IMAGE_PATH = "food_green.png" // Example: "/images/food_green.png"
 
 interface GameCanvasProps {
   onGameOver: (score: number) => void
